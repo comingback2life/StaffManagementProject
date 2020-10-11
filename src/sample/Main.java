@@ -1,6 +1,8 @@
 package sample;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -8,37 +10,69 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.Statement;
+
 public class Main extends Application {
+    Controller c;
 
     @Override
-    public void start(Stage primaryStage) throws Exception{
-        Label idLabel= new Label("Staff ID: ");
+    public void start(Stage primaryStage) throws Exception {
+        Label idLabel = new Label("Staff ID: ");
         Label fNameLabel = new Label("First Name: ");
         Label lNameLabel = new Label("Last Name: ");
         Label midLabel = new Label("MI: ");
         Label addressLabel = new Label("Address: ");
         Label cityLabel = new Label("City: ");
         Label stateLabel = new Label("State: ");
-        Label phoneLabel = new Label ("Phone: ");
+        Label phoneLabel = new Label("Phone: ");
         TextField id = new TextField();
+        id.setDisable(true);
+        if (!id.isEditable()) {
+            id.setStyle("-fx-background-color: gray");
+        }
+        ;
         TextField firstName = new TextField();
         TextField lastName = new TextField();
         TextField midName = new TextField();
         midName.setMaxWidth(25);
-        TextField address= new TextField();
+        TextField address = new TextField();
         TextField city = new TextField();
         TextField phone = new TextField();
         ComboBox state = new ComboBox();
-        Button view = new Button ("View");
-        Button insert = new Button ("Insert");
+        state.getItems().addAll("NSW", "ACT", "VIC", "NT", "SA", "TAS", "WA", "QLD");
+        Button view = new Button("View");
+        Button insert = new Button("Insert");
         Button update = new Button("Update");
         Button clear = new Button("Clear");
+        EventHandler<ActionEvent> viewClicked = new EventHandler<ActionEvent>() { //clicked view button ?
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                if (!c.createTable()) {
+                    noDataFound();
+                } else {
+                    //Table goes here
+                }
+            }
+        };
+        view.setOnAction(viewClicked);
+
+        EventHandler<ActionEvent> insertClicked = new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent actionEvent) {
+                //action
+                if(midName.getText().isEmpty()){
+                    midName.setText("");
+                }
+               c.insertValuestoTable(lastName.getText(),firstName.getText(),midName.getText(),address.getText(),city.getText(),state.getValue().toString(),Integer.valueOf(phone.getText()));
+            }
+        };
+        insert.setOnAction(insertClicked);
         //"NSW","ACT","VIC","NT","SA","TAS","WA","QLD"
         primaryStage.setTitle("Staff Management System");
         GridPane gridPane = new GridPane();
@@ -78,5 +112,22 @@ public class Main extends Application {
 
     public static void main(String[] args) {
         launch(args);
+    }
+    public static void noDataFound(){
+        Stage popupWindow = new Stage();
+        popupWindow.initModality(Modality.APPLICATION_MODAL); //- a stage that blocks input events
+        popupWindow.setTitle("Data not found");
+        Button okButton = new Button("Ok, I understand!");
+        Label noData = new Label("No Data has been found.");
+        okButton.setOnAction(e->{
+            popupWindow.close();
+        });
+        HBox layout= new HBox(10);
+        layout.getChildren().addAll(noData, okButton);
+        layout.setAlignment(Pos.CENTER);
+        Scene scene1= new Scene(layout, 300, 250);
+        popupWindow.setScene(scene1);
+        popupWindow.showAndWait();
+
     }
 }
